@@ -1,0 +1,25 @@
+name: ci
+on: [push, pull_request]
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: false
+      - name: Fetch FreeRTOS-Kernel
+        run: git clone --depth 1 --branch V11.3.3 https://github.com/FreeRTOS/FreeRTOS-Kernel.git third_party/FreeRTOS-Kernel
+      - name: Check TweetNaCl checksums
+        run: |
+          echo "02e65bc3013ff2168983365e55906bc783c4c7e0a60d8100f17bb303a17175c4  third_party/tweetnacl/tweetnacl.c" | sha256sum -c -
+          echo "43f29ad721d9927b747b0100ab4160c119e7bb180c7c98a66e4bf79d31244287  third_party/tweetnacl/tweetnacl.h" | sha256sum -c -
+      - name: Install ARM toolchain
+        run: sudo apt-get update && sudo apt-get install -y gcc-arm-none-eabi cmake
+      - name: Build bootloader and signed application
+        run: |
+          cmake -S . -B build -DCMAKE_TOOLCHAIN_FILE=cmake/arm-none-eabi.cmake -DCMAKE_BUILD_TYPE=Release
+          cmake --build build
+      - name: Host unit tests (Modbus core, SHA-256)
+        run: make -C tests
+      - name: Gateway unit tests
+        run: cargo test --manifest-path gateway/Cargo.toml

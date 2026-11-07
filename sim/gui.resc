@@ -1,0 +1,15 @@
+# Interactive run with Renode's GUI: a terminal window shows the firmware's debug log (USART1).
+# Needs $fw and $sensor (run ./run_gui.sh). Type commands in the Renode monitor window, for example:
+#   sysbus.i2c1.si7021 Temperature 30      (change the simulated temperature, watch temp_x10 follow)
+#   pause / start                          (stop and resume the simulation)
+using sysbus
+mach create "node"
+machine LoadPlatformDescription @platforms/boards/stm32f4_discovery.repl
+machine LoadPlatformDescription $sensor
+sysbus.i2c1.si7021 Temperature 22.5
+sysbus LoadELF $boot
+sysbus LoadBinary $image 0x08010000
+emulation CreateServerSocketTerminal 3456 "modbus_term" false
+connector Connect sysbus.usart2 modbus_term
+showAnalyzer sysbus.usart1
+start

@@ -1,0 +1,15 @@
+# Needs $boot (bootloader ELF), $image (signed application image), $sensor, $log.
+# Runs the node until Renode is stopped. USART2 (Modbus) is exposed as a TCP server on port 3456,
+# USART1 (debug log) is written to build/uart1.log.
+:name: modbus node
+using sysbus
+mach create "node"
+machine LoadPlatformDescription @platforms/boards/stm32f4_discovery.repl
+machine LoadPlatformDescription $sensor
+sysbus.i2c1.si7021 Temperature 22.5
+sysbus LoadELF $boot
+sysbus LoadBinary $image 0x08010000
+emulation CreateServerSocketTerminal 3456 "modbus_term" false
+connector Connect sysbus.usart2 modbus_term
+sysbus.usart1 CreateFileBackend $log true
+start

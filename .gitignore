@@ -1,0 +1,7 @@
+build/
+gateway/target/
+keys/
+*.map
+tests/test_modbus_core
+tests/test_sha256
+third_party/FreeRTOS-Kernel/

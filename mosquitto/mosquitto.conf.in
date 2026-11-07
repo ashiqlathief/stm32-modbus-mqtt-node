@@ -1,0 +1,6 @@
+# TLS-only listener on 8883; CERT_DIR is replaced by tests/mqtt_tls_test.sh
+listener 8883 127.0.0.1
+cafile CERT_DIR/ca.crt
+certfile CERT_DIR/server.crt
+keyfile CERT_DIR/server.key
+allow_anonymous true
